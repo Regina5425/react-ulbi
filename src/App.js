@@ -1,57 +1,80 @@
-import React, { useState } from "react";
-import { useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import PostFilter from "./components/PostFilter";
 import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
-// import Counter from './components/Counter';
-// import ClassCounter from './components/classCounter';
+import MyButton from "./components/UI/button/MyButton";
+import MyModal from "./components/UI/modal/MyModal";
+import { usePosts } from "./hooks/usePosts";
+import PostService from "./API/PostService";
 // import { useRef } from "react";
 import "./styles/App.css";
+import Loader from "./components/UI/loader/Loader";
+import { useFetching } from "./hooks/useFetching";
+import { getPageCount, getPagesArray } from "./utils/pages";
+import Pagination from "./components/UI/pagination/Pagination";
 
 function App() {
-  const [posts, setPosts] = useState([
-    { id: 1, title: "aaa", body: "ddd" },
-    { id: 2, title: "ccccc 2", body: "eeee" },
-    { id: 3, title: "bbbbb 3", body: "hhhhh" },
-  ]);
-
+  const [posts, setPosts] = useState([]);
+  const [filter, setFilter] = useState({ sort: "", query: "" });
+  const [modal, setModal] = useState(false);
+  const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
+  const [totalPages, setTotalPages] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
   // const bodyInputRef = useRef();
 
-  const [filter, setFilter] = useState({ sort: "", query: "" });
-
-  const sortedPosts = useMemo(() => {
-    if (filter.sort) {
-      return [...posts].sort((a, b) =>
-        a[filter.sort].localeCompare(b[filter.sort])
-      );
+  const [fetchPosts, isPostsLoading, postError] = useFetching(
+    async (limit, page) => {
+      const response = await PostService.getAll(limit, page);
+      setPosts(response.data);
+      const totalCount = response.headers["x-total-count"];
+      setTotalPages(getPageCount(totalCount, limit));
     }
-    return posts;
-  }, [filter.sort, posts]);
+  );
 
-  const sortedAndSearchedPosts = useMemo(() => {
-    return sortedPosts.filter((post) =>
-      post.title.toLowerCase().includes(filter.query)
-    );
-  }, [sortedPosts, filter.query]);
+  useEffect(() => {
+    fetchPosts(limit, page);
+  }, []);
 
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
+    setModal(false);
   };
 
   const removePost = (post) => {
     setPosts(posts.filter((p) => p.id !== post.id));
   };
 
+  const changePage = (page) => {
+    setPage(page);
+    fetchPosts(limit, page);
+  };
+
   return (
     <div className='App'>
-      <PostForm create={createPost} />
+      <MyButton style={{ marginTop: "30px" }} onClick={() => setModal(true)}>
+        Создать пользователя
+      </MyButton>
+      <MyModal visible={modal} setVisible={setModal}>
+        <PostForm create={createPost} />
+      </MyModal>
       <hr style={{ margin: "15px 0" }} />
       <PostFilter filter={filter} setFilter={setFilter} />
-      <PostList
-        remove={removePost}
-        posts={sortedAndSearchedPosts}
-        title='Посты про JS'
-      />
+      {postError && <h2>Произошла ошибка ${postError}</h2>}
+      {isPostsLoading ? (
+        <div
+          style={{ display: "flex", justifyContent: "center", marginTop: 50 }}
+        >
+          <Loader />
+        </div>
+      ) : (
+        <PostList
+          remove={removePost}
+          posts={sortedAndSearchedPosts}
+          title='Посты про JS'
+        />
+      )}
+      <Pagination page={page} changePage={changePage} totalPages={totalPages} />
     </div>
   );
 }
