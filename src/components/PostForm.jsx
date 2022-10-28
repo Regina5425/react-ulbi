@@ -7,7 +7,7 @@ const PostForm = ({ create }) => {
 
   const addNewPost = (e) => {
     e.preventDefault();
-    // console.log(bodyInputRef.current.value);
+
     const newPost = {
       ...post,
       id: Date.now(),
