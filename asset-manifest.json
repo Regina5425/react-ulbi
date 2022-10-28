@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/react-ulbi/static/css/main.bf721521.css",
+    "main.js": "/react-ulbi/static/js/main.bd683ea5.js",
+    "index.html": "/react-ulbi/index.html",
+    "main.bf721521.css.map": "/react-ulbi/static/css/main.bf721521.css.map",
+    "main.bd683ea5.js.map": "/react-ulbi/static/js/main.bd683ea5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.bf721521.css",
+    "static/js/main.bd683ea5.js"
+  ]
+}
