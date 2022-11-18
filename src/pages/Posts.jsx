@@ -81,7 +81,7 @@ function Posts() {
         posts={sortedAndSearchedPosts}
         title='Посты про JS'
       />
-      <div ref={lastElement} style={{ height: 20, background: "red" }}></div>
+      <div ref={lastElement}></div>
       {isPostsLoading && (
         <div
           style={{ display: "flex", justifyContent: "center", marginTop: 50 }}
